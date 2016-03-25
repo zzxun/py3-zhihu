@@ -8,7 +8,7 @@
 """
 
 import logging
-from lib import *
+from spider import *
 
 logging.BASIC_FORMAT = '%%(levelname)s - %(filename)s[%(lineno)d]- %(message)s'
 logging.basicConfig()  # you need to initialize logging, otherwise you will not see anything from requests
