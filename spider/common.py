@@ -8,6 +8,12 @@
 """
 
 import base64
+from time import sleep as waitting
+from random import uniform
+from bs4 import BeautifulSoup as _Bs
+
+
+def beautiful_soup(makeup): return _Bs(makeup, 'lxml')
 
 
 def encode_passwd(password: str):
@@ -30,3 +36,12 @@ def decode_passwd(password: str):
         # origin
         return base64.b64decode(password.encode()).decode()
     return password
+
+
+Default_Header = {'X-Requested-With': 'XMLHttpRequest',
+                  'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; '
+                                'rv:39.0) Gecko/20100101 Firefox/39.0'}
+
+
+def wait(seconds):
+    waitting(uniform(0, seconds))

@@ -8,3 +8,4 @@
 """
 
 from .connections import *
+from .news import *

@@ -15,3 +15,4 @@ from .question import Question
 from .question_topic import QuestionTopic
 from .topic import Topic
 from .topic_associate import TopicAssociate
+from .news import News

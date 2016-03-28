@@ -36,7 +36,7 @@ group_topic.add_argument('-t', '--type', type=str, metavar='t', nargs='*',
 group_topic.add_argument('-l', '--limit', type=int, metavar='l', nargs='?',
                          help='question number limit, default parser head 20')
 group_topic.add_argument('-c', '--concurrency', type=int, metavar='cc', nargs='?',
-                         help='concurrency Process, default CPUs')
+                         help='concurrency Process, default CPUs * 2')
 group_topic.add_argument('-s', '--sleep', type=int, metavar='s', nargs='?',
                          help='sleep (seconds) after each http request, default 3s')
 group_topic.set_defaults(func=get_topic)
@@ -46,8 +46,16 @@ group_cookie = subparsers.add_parser('cookie',
                                      description='Show zhihu users cookies')
 group_cookie.set_defaults(func=list_cookies_and_print)
 
+# `news` command
+group_news = subparsers.add_parser('news',
+                                   description='download and parser news')
+group_news.add_argument('-c', '--concurrency', type=int, metavar='cc', nargs='?',
+                        help='concurrency Process, default CPUs * 2')
+group_news.set_defaults(func=get_news)
+
 if __name__ == '__main__':
     # args = ARGS_PRRSER.parse_args('topic -u https://www.zhihu.com/topic/19805484 -t tips -s 3 -l 1'.split())
     # args = ARGS_PRRSER.parse_args('topic -h'.split())
-    args = ARGS_PRRSER.parse_args()
+    args = ARGS_PRRSER.parse_args('news'.split())
+    # args = ARGS_PRRSER.parse_args()
     args.func(args)

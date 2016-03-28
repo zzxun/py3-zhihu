@@ -26,7 +26,7 @@ Base.metadata.create_all(_engine)
 print('connect to mysql')
 
 
-def auto_session(func, *args, **kwargs):
+def auto_session_except(func, *args, **kwargs):
     """:use scoped_session to run func, func's args[0] = session, auto commit and remove
     :param func: function run on session
     :param args: *args
@@ -40,6 +40,25 @@ def auto_session(func, *args, **kwargs):
         session.commit()
     except Exception as e:
         print(e)
+    finally:
+        session.rollback()
+
+    return result
+
+
+def auto_session(func, *args, **kwargs):
+    """:use scoped_session to run func, func's args[0] = session, auto commit and remove
+       auto throw
+    :param func: function run on session
+    :param args: *args
+    :param kwargs: **kwargs
+    :return: func run result
+    """
+    session = Session()
+    result = None
+    try:
+        result = func(*((session,) + args), **kwargs)
+        session.commit()
     finally:
         session.rollback()
 

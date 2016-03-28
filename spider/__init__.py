@@ -8,6 +8,7 @@
 """
 
 from .database import *
-from .utils import *
+from .common import *
 from .zhihu import *
+from .news import *
 from .cli import ARGS_PRRSER

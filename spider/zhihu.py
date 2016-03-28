@@ -6,17 +6,16 @@
 
 """ Description:
 """
-from multiprocessing import cpu_count
 from zhihu import ZhihuClient
 from .database import *
-from .utils import *
+from .common import *
 from .cli import ARGS_PRRSER
 
 CLIENTS = []
 
 
 def get_topic(args):
-    """ :get topic 动态(hot) / 精华(top)
+    """:get topic 动态(hot) / 精华(top)
     :param args: args.url list(str),
                  args.type list(str),
                  args.limit int,
@@ -31,11 +30,12 @@ def get_topic(args):
     from .pool import ThreadPool
     from .extractors.topic import DEFAULT_TYPES, TYPES, get_topic
     from sys import maxsize
+    from multiprocessing import cpu_count
 
     urls = set(args.url)
     types = args.type or DEFAULT_TYPES
     limit = args.limit if args.limit and args.limit > 0 else maxsize
-    concurrency = args.concurrency or cpu_count()
+    concurrency = args.concurrency or cpu_count() * 2
     sleep_seconds = args.sleep or 3
 
     # initial types
@@ -80,19 +80,19 @@ def add_or_update(args):
 
         if code == 0:
             print('login successfully')
-            auto_session(Cookie.add_or_update, usernames[i], password, cookies)
+            auto_session_except(Cookie.add_or_update, usernames[i], password, cookies)
         else:
             print('login failed, reason: {0}'.format(msg))
-            auto_session(Cookie.clean_cookies, usernames[i])
+            auto_session_except(Cookie.clean_cookies, usernames[i])
 
 
 def list_cookies_and_print(args):
-    cs = auto_session(Cookie.get_all_cookies)
+    cs = auto_session_except(Cookie.get_all_cookies)
     print(cs)
 
 
 def get_client():
-    for cookie in auto_session(Cookie.get_all_cookies):
+    for cookie in auto_session_except(Cookie.get_all_cookies):
         CLIENTS.append(ZhihuClient(cookie.cookie))
     if not CLIENTS:
         raise Exception('None cookies found')

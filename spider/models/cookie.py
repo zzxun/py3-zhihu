@@ -10,7 +10,7 @@
 from sqlalchemy import Column, Integer, String, Sequence, Text, DateTime
 from sqlalchemy.sql.expression import text, update
 from .base import Base
-from ..utils import encode_passwd
+from ..common import encode_passwd
 from datetime import datetime
 
 

@@ -8,12 +8,7 @@
 """
 
 from spider.database import *
-from time import sleep as waitting
-from random import uniform
-
-
-def wait(seconds):
-    waitting(uniform(0, seconds))
+from spider.common import wait
 
 
 def get_topic(client, url, thread_pool, limit, types=None, sleep=3):
@@ -65,10 +60,10 @@ def do_topic(topic, associate=None):
 
         print('Process topic %s' % topic.url)
 
-        auto_session(Topic.create_or_update, db_topic)
+        auto_session_except(Topic.create_or_update, db_topic)
 
         if associate:
-            auto_session(TopicAssociate.create, *associate)
+            auto_session_except(TopicAssociate.create, *associate)
             print('Link topic %d to topic %d' % associate)
 
     except Exception as e:
@@ -111,7 +106,7 @@ def get_answer(answer, update=None):
                            comment_num=answer.comment_num,
                            upvote_num=answer.upvote_num,
                            deleted=answer.deleted)
-        auto_session(Answer.create_or_update, db_answer, update)
+        auto_session_except(Answer.create_or_update, db_answer, update)
 
     except Exception as e:
         print(e)
@@ -130,7 +125,7 @@ def get_questions(questions, topic_id, thread_pool, limit, sleep, bloom):
         wait(sleep)
 
         try:
-            auto_session(QuestionTopic.create, question.id, topic_id)
+            auto_session_except(QuestionTopic.create, question.id, topic_id)
             print('Link question %d to topic %d' % (question.id, topic_id))
         except Exception as e:
             print(e)
@@ -166,7 +161,7 @@ def get_question(question, topic_id, thread_pool, sleep=3):
                                answer_num=question.answer_num,
                                creation_time=question.creation_time,
                                last_edit_time=question.last_edit_time)
-        auto_session(Question.create_or_update, db_question)
+        auto_session_except(Question.create_or_update, db_question)
 
         if question.answer_num > 0:
             thread_pool.submit(get_answers,
