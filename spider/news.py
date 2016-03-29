@@ -7,7 +7,8 @@
 """ Description: news main thread
 """
 
-import requests
+from asyncio import get_event_loop, ensure_future, wait
+from .common import get_aio_session
 
 
 def get_news(args):
@@ -16,22 +17,22 @@ def get_news(args):
     :param args: args.concurrency int
     """
 
-    from .pool import ThreadPool
-    from multiprocessing import cpu_count
     from .config import NEWS_URLS
-    from .common import Default_Header
 
-    concurrency = args.concurrency or cpu_count() * 2
+    loop = get_event_loop()
 
-    thread_pool = ThreadPool(concurrency)
-
+    tasks = []
     for (key, tags) in NEWS_URLS.items():
-        exec('from .extractors.%s import process' % (key,))
-        exec('from .config import %s' % (key,))
-        session = requests.session()
-        session.headers.update(Default_Header)
-        for tag in tags:
-            exec('thread_pool.submit(process, %s("%s"), session, "%s")'
-                 % (key, tag, tag))
+        tasks += _task(key, tags, loop)
 
-    thread_pool.wait_completion()
+    loop.run_until_complete(wait(tasks))
+
+
+def _task(key, tags, loop):
+    exec('from .extractors.%s import process' % (key,))
+    exec('from .config import %s' % (key,))
+    local = locals()
+    return [ensure_future(
+        local['process'](local[key](tag),
+                         get_aio_session(loop), tag))
+            for tag in tags]

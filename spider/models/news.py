@@ -30,5 +30,6 @@ class News(Base):
     created_at = Column(DateTime, nullable=False, server_default=text('NOW()'))
 
     @classmethod
+    @auto_session
     def create(cls, session, instance):
         session.add(instance)

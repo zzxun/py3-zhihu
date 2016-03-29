@@ -6,29 +6,29 @@
 
 """ Description: parse sspai
 """
-from spider.database import News, auto_session
-from spider.common import wait, beautiful_soup
+from spider.database import News, Session
+from spider.common import wait, beautiful_soup, auto_close
 
 
-def process(url_generator, session, tag='', sleep=5):
+@auto_close
+async def process(url_generator, session, tag='', sleep=5):
     """: all json data, just get and store it
     :param url_generator: urls
     :param session: requests
     :param tag: tag
     :param sleep: sleep for safe
     """
+
     for url in url_generator:
 
         print('Process news ' + url)
 
-        try:
-            # get
-            res = session.get(url)
+        # get
+        async with session.get(url) as res:
 
-            wait(sleep)
-
+            content = await res.text()
             # parser
-            soup = beautiful_soup(res.content)
+            soup = beautiful_soup(content)
 
             titles = soup.find_all('h2', class_='title')
 
@@ -43,14 +43,14 @@ def process(url_generator, session, tag='', sleep=5):
                     image = i['data-src']
                     summary = s.text.strip()
 
-                    auto_session(News.create, News(source='sspai',
-                                                   tag=tag,
-                                                   url=url,
-                                                   title=title,
-                                                   image=image,
-                                                   summary=summary))
+                    News.create(Session(),
+                                News(source='sspai',
+                                     tag=tag,
+                                     url=url,
+                                     title=title,
+                                     image=image,
+                                     summary=summary))
             else:
                 return
-        except Exception as e:
-            print(e)
-            return
+
+        wait(sleep)

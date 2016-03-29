@@ -7,31 +7,29 @@
 """ Description: download tech2ipo and parser all
 """
 
-from spider.database import News, auto_session
+from spider.database import News, Session
 from spider.config import TECH2IPO_URL
-from spider.common import wait
+from spider.common import wait, auto_close
 
 
-def process(url_generator, session, tag='', sleep=5):
+@auto_close
+async def process(url_generator, session, tag='', sleep=5):
     """: all json data, just get and store it
     :param url_generator: urls
-    :param session: requests
+    :param session: aiohttp.session
     :param tag: tag of url
     :param sleep: sleep for safe
     """
+
     for url in url_generator:
 
         print('Process news ' + url)
 
-        try:
-
-            # get
-            res = session.get(url)
-
-            wait(sleep)
+        # get
+        async with session.get(url) as res:
 
             # parser
-            json_data = res.json()
+            json_data = await res.json()
             if json_data and json_data['data']['list']:
                 # time desc
                 results = json_data['data']['list']
@@ -43,17 +41,16 @@ def process(url_generator, session, tag='', sleep=5):
                         image = image.replace('//', '/').replace('\n', '')
                     summary = r['summary'].strip()
 
-                    auto_session(News.create, News(source='tech2ipo',
-                                                   tag=tag,
-                                                   url=url,
-                                                   title=title,
-                                                   image=image,
-                                                   summary=summary))
+                    News.create(Session(),
+                                News(source='tech2ipo',
+                                     tag=tag,
+                                     url=url,
+                                     title=title,
+                                     image=image,
+                                     summary=summary))
 
             else:
                 return
 
-        except Exception as e:
-            print(e)
-            # return now for duplicate
-            return
+        # for safe
+        wait(sleep)
